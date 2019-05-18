@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MrWangAPI;
-
+using NLog;
 
 namespace ProgramTrading
 {
     class Program
     {
+        static Logger logger = LogManager.GetCurrentClassLogger();
         static MrWangConnection MrWangConnection;
         static void Main(string[] args)
         {
@@ -84,6 +85,28 @@ namespace ProgramTrading
 
                 //第四步 訂閱報價
                 MrWangConnection.SubscribeQuote("TXFD9");
+
+                //產生下單物件
+                Order order = new Order()
+                {
+                    Symbol = "TXFD9",
+                    Side = SideEnum.Buy,
+                    Price = 10700,
+                    Qty = 1,
+                    OrderType = OrderTypeEnum.otMarket,
+                    TimeInForce = TimeInForceEnum.IOC,
+                };
+
+                MrWangConnection.SnedOrder(order);
+                Order _order = new Order();
+                order.Symbol = "TXFD9";
+                order.Side = SideEnum.Buy;
+                order.Price = 10700;
+                order.Qty = 1;
+                order.OrderType = OrderTypeEnum.otLimit;
+                order.TimeInForce = TimeInForceEnum.IOC;
+                //下單
+                //SendSTP(order);
             }
             else
             {
@@ -126,6 +149,10 @@ namespace ProgramTrading
         private static void MrWangConnection_OnMatchInfo(Match match)
         {
             Console.WriteLine($"Symbol:{match.Symbol}" +
+                $" Last:{match.MatchPrice} x {match.MatchQty}" +
+                $" Volume:{match.Volume}");
+
+            logger.Info($"Symbol:{match.Symbol}" +
                 $" Last:{match.MatchPrice} x {match.MatchQty}" +
                 $" Volume:{match.Volume}");
         }
